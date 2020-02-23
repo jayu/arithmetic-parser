@@ -1,0 +1,8 @@
+{
+  "name": "arithmetic-parser",
+  "version": "1.0.0",
+  "description": "This is a try to implement parser for arithemtic expressions with regex",
+  "main": "index.js",
+  "author": "Jakub Mazurek @Jayu",
+  "license": "MIT"
+}
