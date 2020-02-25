@@ -4,5 +4,8 @@
   "description": "This is a try to implement parser for arithemtic expressions with regex",
   "main": "index.js",
   "author": "Jakub Mazurek @Jayu",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "re-template-tag": "^2.0.1"
+  }
 }
