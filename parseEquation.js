@@ -1,18 +1,18 @@
 const { re } = require('re-template-tag')
 
-const re_variable = /[a-z]/
-const re_onlyVariable = re`/^${re_variable}$/`
+const re_variableOrValue = /([a-z]+|([\d]+(\.[\d]+){0,1}))/
+const re_onlyVariable = re`/^${re_variableOrValue}$/`
 const re_mulOrDiv = /[*/]/
 const re_addOrSub = /[+-]/
 const re_startAddOrSub = re`^${re_addOrSub}`
 const re_startMulOrDiv = re`^${re_mulOrDiv}`
 const re_anyBracket = /\(.+\)/
-const re_nonBracketExpression = /[a-z+*/-]/
+const re_nonBracketExpression = re`/${re_variableOrValue}|${re_addOrSub}|${re_mulOrDiv}/`
 const re_bracketWithExpressionOrBracket = re`/(\(((${re_anyBracket})|(${re_nonBracketExpression}))*\))/`
 const re_onlyBracket = re`/^${re_bracketWithExpressionOrBracket}$/`
 
-const re_subtractionAddition = re`/(${re_addOrSub}){0,1}((${re_variable}|${re_bracketWithExpressionOrBracket})(${re_mulOrDiv}){0,1})+/g`
-const re_multiplicationDivision = re`/(${re_mulOrDiv}){0,1}((${re_variable}|${re_bracketWithExpressionOrBracket}))+/g`
+const re_subtractionAddition = re`/(${re_addOrSub}){0,1}((${re_variableOrValue}|${re_bracketWithExpressionOrBracket})(${re_mulOrDiv}){0,1})+/g`
+const re_multiplicationDivision = re`/(${re_mulOrDiv}){0,1}((${re_variableOrValue}|${re_bracketWithExpressionOrBracket}))+/g`
 
 const node = (value, left, right) => ({
   value, left, right
@@ -46,59 +46,6 @@ const parse = (expression) => {
   }
 }
 
-const getValue = (variable) => {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz'
-  return alphabet.indexOf(variable) + 1
-}
-
-const evaluate = ({ value, left, right }) => {
-  switch (value) {
-    case '+': {
-      return evaluate(left) + evaluate(right)
-    };
-    case '-': {
-      return evaluate(left) - evaluate(right)
-    };
-    case '*': {
-      return evaluate(left) * evaluate(right)
-    }
-    case '/': {
-      return evaluate(left) / evaluate(right)
-    }
-    default: {
-      return getValue(value)
-    }
-  }
-}
-
-const evaluateTree = ({ value, left, right }) => {
-  if (/[+*/-]/.test(value)) {
-    return node(value, evaluateTree(left), evaluateTree(right))
-  }
-  else {
-    return node(getValue(value))
-  }
-}
-
-const evaluateValidate = (expression) => {
-  const expressionTree = parse(expression)
-  const parsedValue = evaluate(expressionTree)
-  let transformedExpression = expression
-  while (re_variable.test(transformedExpression)) {
-    const [char] = transformedExpression.match(re_variable)
-    transformedExpression = transformedExpression.replace(char, getValue(char))
-  }
-  const actualValue = eval(transformedExpression)
-  console.log({
-    expression,
-    transformedExpression,
-    parsedValue,
-    actualValue,
-    match: parsedValue === actualValue
-  })
-}
-
 module.exports = {
   parse,
-  evaluateTree
 }

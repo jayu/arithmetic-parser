@@ -1,16 +1,17 @@
 const {parse, evaluateTree} = require('./parseEquation')
 
 const compile = (wrapProgram, wrapLine) => (expression) => {
-  const compileInner = ({ value, right, left }, depth = 1) => {
-    if (parseInt(value,10) === value) {
+  const compileInner = ({ value, right, left }, depth = 0) => {
+    if (!Number.isNaN(parseFloat(value))) {
+      const floatValue = parseFloat(value)
       return {
-        identifier: `${value}.0`,
+        identifier: Number.isInteger(floatValue) ? `${value}.0` : `${value}`,
         code: ''
       }
     }
     else {
-      const leftCompiled = compileInner(left, depth+1)
-      const rightCompiled = compileInner(right, depth*2+1)
+      const leftCompiled = compileInner(left, depth*2+1)
+      const rightCompiled = compileInner(right, depth*2+2)
       const identifier = `i${depth}`
       return {
         identifier,
@@ -18,7 +19,7 @@ const compile = (wrapProgram, wrapLine) => (expression) => {
       }
     }
   }
-  const evaluatedTree = evaluateTree(parse(expression))
+  const evaluatedTree = parse(expression)
   const {identifier, code} = compileInner(evaluatedTree)
   return wrapProgram({identifier, code})
 }
